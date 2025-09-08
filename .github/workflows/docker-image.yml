@@ -44,12 +44,24 @@ jobs:
           docker push pisher24/todo-frontend:latest
 
       # Generate SBOM for Backend
-      - name: Generate Backend SBOM
-        run: docker sbom ${{ secrets.DOCKERHUB_USERNAME }}/todo-backend:latest -o cyclonedx-json > sbom-backend.json
+      #- name: Generate Backend SBOM
+      #  run: docker sbom ${{ secrets.DOCKERHUB_USERNAME }}/todo-backend:latest -o cyclonedx-json > sbom-backend.json
+      - name: Generate SBOM for backend
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{x secrets.DOCKERHUB_USERNAME }}/todo-backend:latest
+          format: cyclonedx-json
+          output-file: sbom-backend.json
 
       # Generate SBOM for Frontend
-      - name: Generate Frontend SBOM
-        run: docker sbom ${{ secrets.DOCKERHUB_USERNAME }}/todo-frontend:latest -o cyclonedx-json > sbom-frontend.json
+      #- name: Generate Frontend SBOM
+      #  run: docker sbom ${{ secrets.DOCKERHUB_USERNAME }}/todo-frontend:latest -o cyclonedx-json > sbom-frontend.json
+      - name: Generate SBOM for frontend
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{x secrets.DOCKERHUB_USERNAME }}/todo-frontend:latest
+          format: cyclonedx-json
+          output-file: sbom-frontend.json
 
       # Install Trivy (for scanning SBOMs)
       - name: Install Trivy
