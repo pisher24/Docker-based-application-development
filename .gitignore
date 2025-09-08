@@ -1,0 +1,18 @@
+# Node
+frontend/node_modules
+frontend/npm-debug.log
+
+# Python
+backend/__pycache__/
+backend/*.pyc
+backend/.env
+
+# VSCode
+.vscode/
+
+# Docker
+docker-compose.override.yml
+
+# OS
+.DS_Store
+Thumbs.db

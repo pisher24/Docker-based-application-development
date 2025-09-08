@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>To-Do Form</title>
+</head>
+<body>
+  <h1>To-Do Form</h1>
+  <form id="todoForm">
+    <label>Item Name</label><br>
+    <input id="itemName" required /><br><br>
+
+    <label>Item Description</label><br>
+    <textarea id="itemDescription" required></textarea><br><br>
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <p id="status"></p>
+
+  <script>
+    /*
+      IMPORTANT:
+      - When running with docker-compose, the backend service is reachable at http://backend:5000
+      - When running frontend standalone (local), change BACKEND_URL to http://localhost:5000
+    */
+    const BACKEND_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+      ? 'http://localhost:5000'
+      : 'http://backend:5000';
+
+    document.getElementById('todoForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const itemName = document.getElementById('itemName').value;
+      const itemDescription = document.getElementById('itemDescription').value;
+      const status = document.getElementById('status');
+
+      try {
+        const res = await fetch(`${BACKEND_URL}/submittodoitem`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ itemName, itemDescription })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || JSON.stringify(data));
+        status.style.color = 'green';
+        status.textContent = data.message || 'Submitted successfully';
+      } catch (err) {
+        status.style.color = 'red';
+        status.textContent = 'Error: ' + err.message;
+      }
+    });
+  </script>
+</body>
+</html>

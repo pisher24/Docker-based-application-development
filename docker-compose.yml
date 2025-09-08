@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  frontend:
+    build: ./frontend
+    image: your_dockerhub_username/todo-frontend:latest
+    container_name: todo_frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+  backend:
+    build: ./backend
+    image: your_dockerhub_username/todo-backend:latest
+    container_name: todo_backend
+    ports:
+      - "5000:5000"
+    environment:
+      - MONGO_URI=${MONGO_URI:-mongodb://mongo:27017/}
+      - MONGO_DB=todo_db
+      - MONGO_COLLECTION=items
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:6.0
+    container_name: todo_mongo
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - "27017:27017"
+
+volumes:
+  mongo-data:
