@@ -12,7 +12,7 @@ services:
 
   backend:
     build: ./backend
-    image: pisher24/todo-frontend:latest
+    image: pisher24/todo-backend:latest
     container_name: todo_backend
     ports:
       - "5000:5000"
