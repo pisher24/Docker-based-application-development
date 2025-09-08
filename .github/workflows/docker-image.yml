@@ -55,16 +55,16 @@ jobs:
           format: cyclonedx-json
           output-file: sbom-backend.json
       # 7️⃣ Install trivy
-       - name: Install TRIVY for SBOM scaning
-         run: curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh
+          name: Install TRIVY for SBOM scaning
+          run: curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh
         #uses: anchore/sbom-action@v0
       #  scaning with trivy
       # 6️⃣ Scan SBOMs for vulnerabilities
       - name: Scan Frontend SBOM
         run: trivy sbom sbom-frontend.json --severity CRITICAL,HIGH --exit-code 1
 
-    - name: Scan Backend SBOM
-      run: trivy sbom sbom-backend.json --severity CRITICAL,HIGH --exit-code 1
+         name:Scan Backend SBOM
+         run:trivy sbom sbom-backend.json --severity CRITICAL,HIGH --exit-code 1
 
       
       # 8️⃣ Upload SBOMs as workflow artifacts
