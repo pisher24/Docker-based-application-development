@@ -1,77 +1,79 @@
-name: CI/CD - Docker Compose Build, Push, SBOM
+name: CI/CD Pipeline with SBOM and Trivy
 
 on:
   push:
     branches:
       - main
   pull_request:
-  workflow_dispatch:  # Optional manual trigger
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repo
-      - name: Checkout repository
+      # Checkout repo
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2️⃣ Log in to Docker Hub
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
+      # Log in to DockerHub
+      - name: Log in to DockerHub
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # 3️⃣ Build all services using Docker Compose
-      - name: Build services
+      # Build images using docker compose
+      - name: Build Docker images
         run: docker compose build
 
-      # 4️⃣ Tag and push frontend image
-      - name: Tag and push frontend image
+      # Tag & Push Backend Image
+      - name: Push Backend Image
         run: |
-          #docker tag pisher24/devops-tutedude-todo-frontend:latest ${{ secrets.DOCKERHUB_USERNAME }}/todo-frontend:latest
-          #docker push ${{ secrets.DOCKERHUB_USERNAME }}/todo-frontend:latest
-          docker push pisher24/todo-frontend:latest
-      # 5️⃣ Tag and push backend image
-      - name: Tag and push backend image
-        run: |
-          #docker tag pisher24/devops-tutedude-todo-backend:latest ${{ secrets.DOCKERHUB_USERNAME }}/todo-backend:latest
+          #docker tag assignment-5-backend:latest ${{ secrets.DOCKERHUB_USERNAME }}/todo-backend:latest
           #docker push ${{ secrets.DOCKERHUB_USERNAME }}/todo-backend:latest
           docker push pisher24/todo-backend:latest
-      # 6️⃣ Generate SBOM for frontend
-      - name: Generate SBOM for frontend
-        uses: anchore/sbom-action@v0
-        with:
-          image: ${{ secrets.DOCKERHUB_USERNAME }}/todo-frontend:latest
-          format: cyclonedx-json
-          output-file: sbom-frontend.json
 
-      # 7️⃣ Generate SBOM for backend
-      - name: Generate SBOM for backend
-        uses: anchore/sbom-action@v0
-        with:
-          image: ${{ secrets.DOCKERHUB_USERNAME }}/todo-backend:latest
-          format: cyclonedx-json
-          output-file: sbom-backend.json
-      # 7️⃣ Install trivy
-          name: Install TRIVY for SBOM scaning
-          run: curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh
-        #uses: anchore/sbom-action@v0
-      #  scaning with trivy
-      # 6️⃣ Scan SBOMs for vulnerabilities
+      # Tag & Push Frontend Image
+      - name: Push Frontend Image
+        run: |
+          #docker tag assignment-5-frontend:latest ${{ secrets.DOCKERHUB_USERNAME }}/todo-frontend:latest
+          #docker push ${{ secrets.DOCKERHUB_USERNAME }}/todo-frontend:latest
+          docker push pisher24/todo-frontend:latest
+
+      # Generate SBOM for Backend
+      - name: Generate Backend SBOM
+        run: docker sbom ${{ secrets.DOCKERHUB_USERNAME }}/todo-backend:latest -o cyclonedx-json > sbom-backend.json
+
+      # Generate SBOM for Frontend
+      - name: Generate Frontend SBOM
+        run: docker sbom ${{ secrets.DOCKERHUB_USERNAME }}/todo-frontend:latest -o cyclonedx-json > sbom-frontend.json
+
+      # Install Trivy (for scanning SBOMs)
+      - name: Install Trivy
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y wget apt-transport-https gnupg lsb-release
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+          echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update -y
+          sudo apt-get install -y trivy
+
+      # Scan Backend SBOM with Trivy
+      - name: Scan Backend SBOM
+        run: trivy sbom sbom-backend.json --severity CRITICAL,HIGH --exit-code 1
+
+      # Scan Frontend SBOM with Trivy
       - name: Scan Frontend SBOM
         run: trivy sbom sbom-frontend.json --severity CRITICAL,HIGH --exit-code 1
 
-         name:Scan Backend SBOM
-         run:trivy sbom sbom-backend.json --severity CRITICAL,HIGH --exit-code 1
-
-      
-      # 8️⃣ Upload SBOMs as workflow artifacts
-      - name: Upload SBOM artifacts
+      # Upload SBOMs as workflow artifacts
+      - name: Upload SBOMs
         uses: actions/upload-artifact@v4
         with:
           name: sboms
           path: |
-            sbom-frontend.json
             sbom-backend.json
+            sbom-frontend.json
