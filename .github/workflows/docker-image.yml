@@ -49,7 +49,7 @@ jobs:
       - name: Generate SBOM for backend
         uses: anchore/sbom-action@v0
         with:
-          image: ${{x secrets.DOCKERHUB_USERNAME }}/todo-backend:latest
+          image: ${{secrets.DOCKERHUB_USERNAME }}/todo-backend:latest
           format: cyclonedx-json
           output-file: sbom-backend.json
 
@@ -59,7 +59,7 @@ jobs:
       - name: Generate SBOM for frontend
         uses: anchore/sbom-action@v0
         with:
-          image: ${{x secrets.DOCKERHUB_USERNAME }}/todo-frontend:latest
+          image: ${{secrets.DOCKERHUB_USERNAME }}/todo-frontend:latest
           format: cyclonedx-json
           output-file: sbom-frontend.json
 
