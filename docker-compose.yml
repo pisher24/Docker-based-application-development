@@ -1,9 +1,9 @@
-version: "3.8"
+#version: "3.8"
 
 services:
   frontend:
     build: ./frontend
-    image: your_dockerhub_username/todo-frontend:latest
+    image: pisher24/devops-tutedude-todo-frontend:latest
     container_name: todo_frontend
     ports:
       - "3000:3000"
@@ -12,7 +12,7 @@ services:
 
   backend:
     build: ./backend
-    image: your_dockerhub_username/todo-backend:latest
+    image: pisher24/devops-tutedude-todo-backend:latest
     container_name: todo_backend
     ports:
       - "5000:5000"
