@@ -38,7 +38,7 @@ jobs:
         run: |
           #docker tag pisher24/devops-tutedude-todo-backend:latest ${{ secrets.DOCKERHUB_USERNAME }}/todo-backend:latest
           #docker push ${{ secrets.DOCKERHUB_USERNAME }}/todo-backend:latest
-          docker push pisher24/todo-backendend:latest
+          docker push pisher24/todo-backend:latest
       # 6️⃣ Generate SBOM for frontend
       - name: Generate SBOM for frontend
         uses: anchore/sbom-action@v0
