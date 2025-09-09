@@ -6,9 +6,10 @@ frontend/npm-debug.log
 backend/__pycache__/
 backend/*.pyc
 backend/.env
-
+backend/ev2
 # VSCode
 .vscode/
+yaml-working-actions-template
 
 # Docker
 docker-compose.override.yml
