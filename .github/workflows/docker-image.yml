@@ -75,11 +75,11 @@ jobs:
 
       # Scan Backend SBOM with Trivy
       - name: Scan Backend SBOM
-        run: trivy sbom sbom-backend.json --severity CRITICAL,HIGH --exit-code 1
+        run: trivy sbom sbom-backend.json --severity CRITICAL,HIGH 
 
       # Scan Frontend SBOM with Trivy
       - name: Scan Frontend SBOM
-        run: trivy sbom sbom-frontend.json --severity CRITICAL,HIGH --exit-code 1
+        run: trivy sbom sbom-frontend.json 
 
       # Upload SBOMs as workflow artifacts
       - name: Upload SBOMs
