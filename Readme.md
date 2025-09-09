@@ -12,5 +12,3 @@ Assignment-5/
 │── backend/ # Flask backend
 │── docker-compose.yml
 │── README.md
-
-sample
