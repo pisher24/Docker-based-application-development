@@ -1,0 +1,91 @@
+name: CI/CD Pipeline with SBOM and Trivy
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout repo
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Log in to DockerHub
+      - name: Log in to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Build images using docker compose
+      - name: Build Docker images
+        run: docker compose build
+
+      # Tag & Push Backend Image
+      - name: Push Backend Image
+        run: |
+          #docker tag assignment-5-backend:latest ${{ secrets.DOCKERHUB_USERNAME }}/todo-backend:latest
+          #docker push ${{ secrets.DOCKERHUB_USERNAME }}/todo-backend:latest
+          docker push pisher24/todo-backend:latest
+
+      # Tag & Push Frontend Image
+      - name: Push Frontend Image
+        run: |
+          #docker tag assignment-5-frontend:latest ${{ secrets.DOCKERHUB_USERNAME }}/todo-frontend:latest
+          #docker push ${{ secrets.DOCKERHUB_USERNAME }}/todo-frontend:latest
+          docker push pisher24/todo-frontend:latest
+
+      # Generate SBOM for Backend
+      #- name: Generate Backend SBOM
+      #  run: docker sbom ${{ secrets.DOCKERHUB_USERNAME }}/todo-backend:latest -o cyclonedx-json > sbom-backend.json
+      - name: Generate SBOM for backend
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{secrets.DOCKERHUB_USERNAME }}/todo-backend:latest
+          format: cyclonedx-json
+          output-file: sbom-backend.json
+
+      # Generate SBOM for Frontend
+      #- name: Generate Frontend SBOM
+      #  run: docker sbom ${{ secrets.DOCKERHUB_USERNAME }}/todo-frontend:latest -o cyclonedx-json > sbom-frontend.json
+      - name: Generate SBOM for frontend
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{secrets.DOCKERHUB_USERNAME }}/todo-frontend:latest
+          format: cyclonedx-json
+          output-file: sbom-frontend.json
+
+      # Install Trivy (for scanning SBOMs)
+      - name: Install Trivy
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y wget apt-transport-https gnupg lsb-release
+          wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+          echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee /etc/apt/sources.list.d/trivy.list
+          sudo apt-get update -y
+          sudo apt-get install -y trivy
+
+      # Scan Backend SBOM with Trivy
+      - name: Scan Backend SBOM
+        run: trivy sbom sbom-backend.json --severity CRITICAL,HIGH 
+
+      # Scan Frontend SBOM with Trivy
+      - name: Scan Frontend SBOM
+        run: trivy sbom sbom-frontend.json 
+
+      # Upload SBOMs as workflow artifacts
+      - name: Upload SBOMs
+        uses: actions/upload-artifact@v4
+        with:
+          name: sboms
+          path: |
+            sbom-backend.json
+            sbom-frontend.json
